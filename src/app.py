@@ -7,6 +7,8 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import base64
 from requests import post, get
 import json
+import datetime
+import matplotlib.pyplot as plt
 
 # load the .env file variables
 load_dotenv()
@@ -79,8 +81,33 @@ result = search_for_artist(token, ask_artist)
 artist_id = result["id"]
 songs = get_songs_by_artist(token, artist_id)
 
+indexes = []
+names = []
+pops = []
+dur = []
+
 for idx, song in enumerate(songs):
-    print(f"{idx+1}. {song['name']}")
+    indexes.append(idx+1)
+    names.append(song['name'])
+    pops.append(song['popularity'])
+    delta = str(datetime.timedelta(milliseconds=song['duration_ms']))
+    dur.append(delta)
+
+df = pd.DataFrame({'Index': indexes})
+df['Name'] = names
+df['Popularity'] = pops
+df['Duration (h, m, s)'] = dur
+
+
+
+print(df.sort_values(by='Duration (h, m, s)', axis=0, ascending=True))
+
+plt.scatter(df['Duration (h, m, s)'], df['Popularity'])
+plt.xticks(rotation=45, ha='right' )
+plt.tight_layout()
+plt.show()
+print(f"My artist of choice, Hoke, I would say there is no significant relationship between popularity and song duration")
+
 
 
 
