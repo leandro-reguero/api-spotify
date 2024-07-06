@@ -5,12 +5,11 @@ from dotenv import load_dotenv
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import base64
-from requests import post
+from requests import post, get
 import json
 
 # load the .env file variables
 load_dotenv()
-
 cid = os.environ.get("CLIENT_ID")
 cet = os.environ.get("CLIENT_SECRET")
 
@@ -21,6 +20,7 @@ def get_token():
     auth_string = cid + ":" + cet
     auth_bytes = auth_string.encode("utf-8")
     auth_base64 = str(base64.b64encode(auth_bytes), "utf-8")
+
     # referencing the url where we want to send the request
     url = "https://accounts.spotify.com/api/token"
     headers = {
@@ -28,6 +28,8 @@ def get_token():
         "Content-Type": "application/x-www-form-urlencoded"
     }
     data = {"grant_type": "client_credentials"}
+
+    # storing the results obtained
     result = post(url, headers=headers, data=data)
     json_result = json.loads(result.content)
     token = json_result["access_token"]
@@ -40,11 +42,45 @@ def get_auth_header(token):
 # storing the token in a variable
 token = get_token()
 
-# save the address for my artist
-lean_uri = 'spotify:artist:5Mtx4kiMwPhSbwVPVVR67g'
-lean_address = '5Mtx4kiMwPhSbwVPVVR67g'
+def search_for_artist(token, artist_name):
+    # defining the url where we want to get the request from
+    search_endpoint = 'https://api.spotify.com/v1/search'
+
+    # defining the headers for the auth
+    headers = get_auth_header(token)
+
+    # constructing the query string
+    query = f"?q={artist_name}&type=artist&market=ES&limit=1"
+    query_url = search_endpoint + query
+
+    # obtaining and storing the results obtained
+    result = get(query_url, headers=headers)
+    json_result = json.loads(result.content)['artists']['items']
+    if len(json_result) == 0:
+        print("No artists with this name exist...")
+        return None
+
+    return json_result[0]
+
+def get_songs_by_artist(token, artist_id):
+    url = f"https://api.spotify.com/v1/artists/{artist_id}/top-tracks?country=ES"
+    headers = get_auth_header(token)
+    result = get(url, headers=headers)
+    json_result = json.loads(result.content)['tracks']
+    return json_result
 
 
+
+
+
+ask_artist = str(input('Input desired artist name: '))
+token = get_token()
+result = search_for_artist(token, ask_artist)
+artist_id = result["id"]
+songs = get_songs_by_artist(token, artist_id)
+
+for idx, song in enumerate(songs):
+    print(f"{idx+1}. {song['name']}")
 
 
 
