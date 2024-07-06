@@ -100,13 +100,14 @@ df['Duration (h, m, s)'] = dur
 
 
 
-print(df.sort_values(by='Duration (h, m, s)', axis=0, ascending=True))
+print(df.sort_values(by='Duration (h, m, s)', axis=0, ascending=True, inplace=True))
 
 plt.scatter(df['Duration (h, m, s)'], df['Popularity'])
 plt.xticks(rotation=45, ha='right' )
 plt.tight_layout()
 plt.show()
-print(f"My artist of choice, Hoke, I would say there is no significant relationship between popularity and song duration")
+print(f"My artist of choice, Kase.O, I would say there is a slightly relevant relationship between popularity and song duration")
+print("I would conclude, that, for Kase.O, popularity and song duration are somewhat directly proportional")
 
 
 
